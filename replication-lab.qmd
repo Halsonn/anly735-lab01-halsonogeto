@@ -1,0 +1,16 @@
+---
+title: "Lab 01 Replication Report"
+author: "halsonogeto"
+format:
+  docx: default
+---
+
+## Analysis Results
+
+Below are the comparative evaluation metrics across splitting strategies:
+
+```{python}
+#| echo: false
+import pandas as pd
+df_results = pd.read_csv("analysis/lab01_results.csv")
+df_results
