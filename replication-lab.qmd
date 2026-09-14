@@ -126,12 +126,11 @@ else:
     os.makedirs("analysis", exist_ok=True)
     results_df = pd.DataFrame(records)
     results_df.to_csv(results_path, index=False)
-##Empirical Results & Comparison
-Below are the computed performance metrics derived from analysis/lab01_results.csv:Code snippet#| label: display-table
+## Empirical Results & Comparison
+Below are the computed performance metrics derived from analysis/lab01_results.csv:
 
 
-
-##FAIR Model Comparison Audit
+## FAIR Model Comparison Audit
 F — Frame: What Exactly Is Being Compared?
 The comparison contrasts an $L_2$-regularized parametric linear model (Ridge Regression) against a non-parametric ensemble (Random Forest Regression) predicting hourly bike rental counts ($cnt$). Two specific methodological conditions govern the data split:
 1.	Random Evaluation: $80\%$ training and $20\%$ test sets drawn via uniform random sampling across the temporal horizon.
