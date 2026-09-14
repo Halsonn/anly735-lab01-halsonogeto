@@ -131,12 +131,24 @@ Below are the computed performance metrics derived from analysis/lab01_results.c
 
 
 # FAIR Model Comparison Audit
-#| F — Frame: What Exactly Is Being Compared?
-#| The comparison contrasts an $L_2$-regularized parametric linear model (Ridge Regression) against a non-parametric ensemble (Random Forest Regression) predicting hourly bike rental counts ($cnt$). Two specific methodological conditions govern the data split:
-#| 1.	Random Evaluation: $80\%$ training and $20\%$ test sets drawn via uniform random sampling across the temporal horizon.
-#| 2.	Temporally Structured Evaluation: Chronologically partitioned sets where the earliest $80\%$ of hourly records form the training set and the subsequent $20\%$ form the holdout test set.
-#| A — Align: Are the Model Conditions Comparable?
+ F — Frame: What Exactly Is Being Compared?
+
+
+  The comparison contrasts an $L_2$-regularized parametric linear model (Ridge Regression) against a non-parametric ensemble (Random Forest Regression) predicting hourly bike rental counts ($cnt$). Two specific methodological conditions govern the data split:
+
+
+1.	Random Evaluation: $80\%$ training and $20\%$ test sets drawn via uniform random sampling across the temporal horizon.
+
+
+2.	Temporally Structured Evaluation: Chronologically partitioned sets where the earliest $80\%$ of hourly records form the training set and the subsequent $20\%$ form the holdout test set.
+
+
+A — Align: Are the Model Conditions Comparable?
+
+
 All internal modeling factors remain strictly aligned across designs. Both algorithms receive the exact same engineered feature set, identical standard scaling on numerical inputs, identical one-hot encoding on categorical inputs, and are evaluated on identical metrics (RMSE and MAE). The only manipulated variable across experiments is the structural partitioning of the rows.
+
+
 I — Inspect: What Do RMSE and MAE Show?
 Under the Random Evaluation, error magnitudes are heavily deflated. Random Forest scores an RMSE and MAE substantially lower than its corresponding performance under the chronological split. Under the Temporally Structured Evaluation, errors escalate markedly for both candidate models. The error metric shifts reflect that predicting future points without adjacent temporal neighbors is fundamentally more challenging than reconstructing missing points within an existing sequence.
 R — Review: Does the Conclusion Change?
