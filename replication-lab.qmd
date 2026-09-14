@@ -126,11 +126,11 @@ else:
     os.makedirs("analysis", exist_ok=True)
     results_df = pd.DataFrame(records)
     results_df.to_csv(results_path, index=False)
-## Empirical Results & Comparison
+# Empirical Results & Comparison
 Below are the computed performance metrics derived from analysis/lab01_results.csv:
 
 
-## FAIR Model Comparison Audit
+# FAIR Model Comparison Audit
 F — Frame: What Exactly Is Being Compared?
 The comparison contrasts an $L_2$-regularized parametric linear model (Ridge Regression) against a non-parametric ensemble (Random Forest Regression) predicting hourly bike rental counts ($cnt$). Two specific methodological conditions govern the data split:
 1.	Random Evaluation: $80\%$ training and $20\%$ test sets drawn via uniform random sampling across the temporal horizon.
@@ -151,13 +151,13 @@ In time-series demand data, rental counts exhibit high temporal autocorrelation 
 Model selection criteria often conflate "choosing the superior model" with "estimating real-world error." While the ranking remained stable here (Random Forest outranked Ridge in both cases), an engineering team deploying this model using the random evaluation metrics would severely underestimate production error, leading to flawed operational capacity planning.
 3.	Non-Stationarity and Domain Shift:
 The final 20% of chronological observations capture distinct seasonal transitions and system-level ridership expansion. Tree-based ensembles cannot predict values higher than the maximum target observed in their training partition; hence, systemic demand increases in later periods produce structurally elevated test errors.
-Extended Research & Replication Verdict
-Revised Research Claim
+# Extended Research & Replication Verdict
+## Revised Research Claim
 Evaluation design substantially alters estimated out-of-sample predictive performance on time-dependent data by unmasking autocorrelation leakage, even when relative model rankings between linear and non-linear specifications remain stable.
 Permissible vs. Non-Permissible Claims
 •	What the evidence permits claiming: Unconstrained random train/test splits severely underestimate operational generalization error on time-indexed datasets. Random Forest consistently outperforms Ridge Regression across both partitioning designs within this specific feature space.
 •	What the evidence does NOT permit claiming: The evidence does not permit claiming that Random Forest will retain its performance advantage across arbitrary forecast horizons, nor does it guarantee that a single chronological holdout split is sufficient for production validation.
-Replication Verdict
+## Replication Verdict
 Reproduced.
 The empirical results generated from the reproducible pipeline confirm the core research claim: changing the evaluation design from a random split to a temporally structured split produces statistically and operationally significant degradation in estimated predictive performance (RMSE and MAE).
 Proposed Extension
