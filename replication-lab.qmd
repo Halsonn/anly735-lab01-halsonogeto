@@ -54,8 +54,7 @@ rows = []
 for _, row in display_df.iterrows():
     rows.append("| " + " | ".join(str(val) for val in row) + " |")
 
-print("
-
+print("\n".join([header_row, divider_row] + rows))
 ```{python}
 #| label: load-and-evaluate
 #| echo: false
