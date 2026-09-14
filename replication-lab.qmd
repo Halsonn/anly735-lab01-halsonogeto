@@ -130,6 +130,7 @@ else:
 Below are the computed performance metrics derived from analysis/lab01_results.csv:Code snippet#| label: display-table
 
 
+
 ##FAIR Model Comparison Audit
 F — Frame: What Exactly Is Being Compared?
 The comparison contrasts an $L_2$-regularized parametric linear model (Ridge Regression) against a non-parametric ensemble (Random Forest Regression) predicting hourly bike rental counts ($cnt$). Two specific methodological conditions govern the data split:
