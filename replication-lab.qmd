@@ -30,31 +30,6 @@ Prior to inspecting the empirical output, my expectations are structured around 
 
 The prediction target is hourly bike rental demand (`cnt`) from the UCI Bike Sharing Dataset. Potential sources of target leakage (`casual` and `registered` counts) and arbitrary identifiers (`instant`, `dteday`) are strictly excised. Operational feature availability is preserved by incorporating 24-hour and 48-hour historical rental lags (`cnt_lag_24h`, `cnt_lag_48h`).
 
-#| label: display-table
-#| echo: false
-#| output: asis
-
-display_df = results_df.copy()
-display_df["rmse"] = display_df["rmse"].round(2)
-display_df["mae"] = display_df["mae"].round(2)
-
-# Assign rankings within each evaluation split
-display_df["rank"] = display_df.groupby("evaluation_design")["rmse"].rank(ascending=True).astype(int)
-
-# Reorder and rename columns
-display_df = display_df[["evaluation_design", "model", "rmse", "mae", "rank"]]
-display_df.columns = ["Evaluation Design", "Model", "RMSE", "MAE", "Rank"]
-
-# Construct native Markdown table
-headers = list(display_df.columns)
-header_row = "| " + " | ".join(headers) + " |"
-divider_row = "| " + " | ".join(["---"] * len(headers)) + " |"
-
-rows = []
-for _, row in display_df.iterrows():
-    rows.append("| " + " | ".join(str(val) for val in row) + " |")
-
-print("\n".join([header_row, divider_row] + rows))
 ```{python}
 #| label: load-and-evaluate
 #| echo: false
