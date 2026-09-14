@@ -129,6 +129,10 @@ else:
 Empirical Results & ComparisonBelow are the computed performance metrics derived from analysis/lab01_results.csv:Code snippet#| label: display-table
 #| echo: false
 
+#| label: display-table
+#| echo: false
+#| output: asis
+
 display_df = results_df.copy()
 display_df["rmse"] = display_df["rmse"].round(2)
 display_df["mae"] = display_df["mae"].round(2)
@@ -140,9 +144,13 @@ display_df["rank"] = display_df.groupby("evaluation_design")["rmse"].rank(ascend
 display_df = display_df[["evaluation_design", "model", "rmse", "mae", "rank"]]
 display_df.columns = ["Evaluation Design", "Model", "RMSE", "MAE", "Rank"]
 
-from IPython.display import Markdown
-Markdown(display_df.to_markdown(index=False))
+# Direct Markdown table output for Word rendering
+headers = list(display_df.columns)
+header_row = "| " + " | ".join(headers) + " |"
+divider_row = "| " + " | ".join(["---"] * len(headers)) + " |"
+rows = ["| " + " | ".join(str(val) for val in row) + " |" for _, row in display_df.iterrows()]
 
+print("\n".join([header_row, divider_row] + rows))
 FAIR Model Comparison Audit
 F — Frame: What Exactly Is Being Compared?
 The comparison contrasts an $L_2$-regularized parametric linear model (Ridge Regression) against a non-parametric ensemble (Random Forest Regression) predicting hourly bike rental counts ($cnt$). Two specific methodological conditions govern the data split:
