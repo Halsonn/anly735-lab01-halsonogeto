@@ -150,19 +150,47 @@ All internal modeling factors remain strictly aligned across designs. Both algor
 
 
 I — Inspect: What Do RMSE and MAE Show?
+
+
 Under the Random Evaluation, error magnitudes are heavily deflated. Random Forest scores an RMSE and MAE substantially lower than its corresponding performance under the chronological split. Under the Temporally Structured Evaluation, errors escalate markedly for both candidate models. The error metric shifts reflect that predicting future points without adjacent temporal neighbors is fundamentally more challenging than reconstructing missing points within an existing sequence.
+
+
 R — Review: Does the Conclusion Change?
+
+
 The analytical conclusion depends heavily on whether one examines model ranking or estimated predictive performance:
+
+
 •	Model Ranking: Invariant. Random Forest retains Rank 1 under both evaluation frameworks due to its non-linear modeling capacity.
+
+
 •	Estimated Performance: Drastically altered. Relying on the random evaluation yields an overly optimistic forecast of model accuracy, understating actual deployment forecast errors by a substantial margin.
-Methodological Diagnosis
+
+
+# Methodological Diagnosis
+
+
 The divergence between random and temporally structured evaluation highlights key statistical principles:
+
+
 1.	Information Leakage via Serial Autocorrelation:
+
+
 In time-series demand data, rental counts exhibit high temporal autocorrelation ($\text{Corr}(y_t, y_{t-1}) \approx 1$). When data is split randomly, a test observation at hour $t$ is frequently bounded by training observations at $t-1$ and $t+1$. The model is rewarded for local interpolation rather than true out-of-sample extrapolation.
+
+
 2.	Distinction Between Ranking and Generalization Performance:
+
+
 Model selection criteria often conflate "choosing the superior model" with "estimating real-world error." While the ranking remained stable here (Random Forest outranked Ridge in both cases), an engineering team deploying this model using the random evaluation metrics would severely underestimate production error, leading to flawed operational capacity planning.
+
+
 3.	Non-Stationarity and Domain Shift:
+
+
 The final 20% of chronological observations capture distinct seasonal transitions and system-level ridership expansion. Tree-based ensembles cannot predict values higher than the maximum target observed in their training partition; hence, systemic demand increases in later periods produce structurally elevated test errors.
+
+
 # Extended Research & Replication Verdict
 ## Revised Research Claim
 Evaluation design substantially alters estimated out-of-sample predictive performance on time-dependent data by unmasking autocorrelation leakage, even when relative model rankings between linear and non-linear specifications remain stable.
