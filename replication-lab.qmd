@@ -126,32 +126,11 @@ else:
     os.makedirs("analysis", exist_ok=True)
     results_df = pd.DataFrame(records)
     results_df.to_csv(results_path, index=False)
-Empirical Results & ComparisonBelow are the computed performance metrics derived from analysis/lab01_results.csv:Code snippet#| label: display-table
-#| echo: false
+##Empirical Results & Comparison
+Below are the computed performance metrics derived from analysis/lab01_results.csv:Code snippet#| label: display-table
 
-#| label: display-table
-#| echo: false
-#| output: asis
 
-display_df = results_df.copy()
-display_df["rmse"] = display_df["rmse"].round(2)
-display_df["mae"] = display_df["mae"].round(2)
-
-# Assign rankings within each evaluation split
-display_df["rank"] = display_df.groupby("evaluation_design")["rmse"].rank(ascending=True).astype(int)
-
-# Reorder columns for clean rendering
-display_df = display_df[["evaluation_design", "model", "rmse", "mae", "rank"]]
-display_df.columns = ["Evaluation Design", "Model", "RMSE", "MAE", "Rank"]
-
-# Direct Markdown table output for Word rendering
-headers = list(display_df.columns)
-header_row = "| " + " | ".join(headers) + " |"
-divider_row = "| " + " | ".join(["---"] * len(headers)) + " |"
-rows = ["| " + " | ".join(str(val) for val in row) + " |" for _, row in display_df.iterrows()]
-
-print("\n".join([header_row, divider_row] + rows))
-FAIR Model Comparison Audit
+##FAIR Model Comparison Audit
 F — Frame: What Exactly Is Being Compared?
 The comparison contrasts an $L_2$-regularized parametric linear model (Ridge Regression) against a non-parametric ensemble (Random Forest Regression) predicting hourly bike rental counts ($cnt$). Two specific methodological conditions govern the data split:
 1.	Random Evaluation: $80\%$ training and $20\%$ test sets drawn via uniform random sampling across the temporal horizon.
