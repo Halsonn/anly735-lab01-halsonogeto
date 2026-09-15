@@ -169,40 +169,17 @@ The analytical conclusion depends heavily on whether one examines model ranking 
 
 # Methodological Diagnosis
 
+Autocorrelation Leakage: Random train/test splits violate independence assumptions on time-series datasets by placing points immediately preceding and following test instances into the training set.
 
-The divergence between random and temporally structured evaluation highlights key statistical principles:
+Ranking vs. Performance: Preserving model rank does not validate an evaluation design; capacity planning requires accurate error magnitudes, which random splits fail to deliver.
 
-
-1.	Information Leakage via Serial Autocorrelation:
-
-
-In time-series demand data, rental counts exhibit high temporal autocorrelation ($\text{Corr}(y_t, y_{t-1}) \approx 1$). When data is split randomly, a test observation at hour $t$ is frequently bounded by training observations at $t-1$ and $t+1$. The model is rewarded for local interpolation rather than true out-of-sample extrapolation.
-
-
-2.	Distinction Between Ranking and Generalization Performance:
-
-
-Model selection criteria often conflate "choosing the superior model" with "estimating real-world error." While the ranking remained stable here (Random Forest outranked Ridge in both cases), an engineering team deploying this model using the random evaluation metrics would severely underestimate production error, leading to flawed operational capacity planning.
-
-
-3.	Non-Stationarity and Domain Shift:
-
-
-The final 20% of chronological observations capture distinct seasonal transitions and system-level ridership expansion. Tree-based ensembles cannot predict values higher than the maximum target observed in their training partition; hence, systemic demand increases in later periods produce structurally elevated test errors.
-
-
-# Extended Research & Replication Verdict
-## Revised Research Claim
-Evaluation design substantially alters estimated out-of-sample predictive performance on time-dependent data by unmasking autocorrelation leakage, even when relative model rankings between linear and non-linear specifications remain stable.
-Permissible vs. Non-Permissible Claims
-•	What the evidence permits claiming: Unconstrained random train/test splits severely underestimate operational generalization error on time-indexed datasets. Random Forest consistently outperforms Ridge Regression across both partitioning designs within this specific feature space.
-•	What the evidence does NOT permit claiming: The evidence does not permit claiming that Random Forest will retain its performance advantage across arbitrary forecast horizons, nor does it guarantee that a single chronological holdout split is sufficient for production validation.
-## Replication Verdict
+# Replication Verdict
 Reproduced.
-The empirical results generated from the reproducible pipeline confirm the core research claim: changing the evaluation design from a random split to a temporally structured split produces statistically and operationally significant degradation in estimated predictive performance (RMSE and MAE).
-Proposed Extension
-A meaningful next research step is implementing Rolling-Window Time-Series Cross-Validation (Walk-Forward Validation) across 5 sequential chronological folds. A single 80/20 temporal split remains vulnerable to localized weather shocks or seasonal anomalies occurring specifically within the final 20% test partition. Rolling-window evaluation provides a variance estimate around out-of-sample performance across diverse seasonal transitions.
 
+The empirical results confirm the central claim: changing the evaluation design from a random split to a temporally structured split significantly degrades estimated predictive performance (RMSE and MAE).
+
+# Extension
+Implement a 5-fold walk-forward rolling-window time-series cross-validation to assess stability across all seasonal transitions rather than relying on a single static holdout partition.
 
 
 
