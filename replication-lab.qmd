@@ -1,8 +1,8 @@
 ---
-title: "Replication Laboratory #1: Evaluation Design Matters"
+title: "Replication Laboratory #1 | Evaluation Design Matters"
 subtitle: "ANLY 735: Predictive AI — Week 2"
 author: "Halson Ogeto Nyaberi"
-date: today
+date: "September 14, 2026"
 format:
   docx:
     toc: false
@@ -14,21 +14,23 @@ execute:
   message: false
 ---
 
-# Research Claim and Prior Expectations
+# Laboratory Question & Theoretical Claim
 
-## Initial Research Claim
-Evaluating predictive models on time-indexed observations using a random cross-sectional split produces an overly optimistic estimate of generalization error and can misrepresent operational predictive performance compared to a temporally structured evaluation.
+## Laboratory Question
+Does changing the evaluation design change estimated predictive performance—and does it change which model appears stronger?
+
+## Research Claim
+Evaluating predictive regression models using an unconstrained random split yields an artificially optimistic estimate of out-of-sample error and misrepresents operational generalization relative to a temporally structured evaluation on time-indexed demand data [@hyndman2018forecasting].
 
 ## Pre-Analysis Expectations
-Prior to inspecting the empirical output, my expectations are structured around two distinct operational questions:
-
-1. **Estimated Predictive Performance:** Both Ridge Regression and Random Forest Regressor are expected to exhibit substantially lower test errors (lower RMSE and MAE) under the **Random Evaluation** design compared to the **Temporally Structured Evaluation**. Random partitioning scatters temporally adjacent observations across both training and testing folds, allowing models to interpolate across localized temporal shocks rather than predicting unseen future states.
-2. **Relative Model Ranking:** Random Forest is anticipated to outperform Ridge Regression across both evaluation designs because hourly bike demand is characterized by non-linear relationships and complex interactions (e.g., commute hours conditioned on working days vs. weekends, temperature thresholds). However, the absolute error gap is expected to expand under the temporal split, where regression trees face challenges extrapolating macro-level growth trends.
+1. **Estimated Predictive Performance:** Both Ridge Regression [@hoerl1970ridge] and Random Forest Regression [@breiman2001random] will produce markedly lower Root Mean Squared Error (RMSE) and Mean Absolute Error (MAE) under the Random Evaluation scheme than under the Temporally Structured Evaluation. Random splitting allows temporally adjacent observations to populate both training and test sets, enabling interpolation across contiguous serial correlations.
+2. **Model Ranking:** Random Forest Regression is anticipated to outperform Ridge Regression across both regimes due to its ability to model non-linear interactions among temporal flags, calendar variables, and weather dynamics without requiring manual basis expansions.
 
 ---
+
 # Reproducible Analytical Pipeline
 
-The prediction target is hourly bike rental demand (`cnt`) from the UCI Bike Sharing Dataset. Potential sources of target leakage (`casual` and `registered` counts) and arbitrary identifiers (`instant`, `dteday`) are strictly excised. Operational feature availability is preserved by incorporating 24-hour and 48-hour historical rental lags (`cnt_lag_24h`, `cnt_lag_48h`).
+The prediction target is hourly bike rental demand (`cnt`) from the Capital Bikeshare system via the UCI Machine Learning Repository [@fanaee2014event]. Potential sources of target leakage (`casual` and `registered` counts) and record indices (`instant`, `dteday`) are strictly excluded. Operational feature availability is preserved by incorporating 24-hour and 48-hour historical rental lags (`cnt_lag_24h`, `cnt_lag_48h`).
 
 ```{python}
 #| label: load-and-evaluate
@@ -53,14 +55,12 @@ results_path = "analysis/lab01_results.csv"
 if os.path.exists(results_path):
     results_df = pd.read_csv(results_path)
 else:
-    # Acquire dataset reproducibly
     url = "[https://archive.ics.uci.edu/static/public/275/bike+sharing+dataset.zip](https://archive.ics.uci.edu/static/public/275/bike+sharing+dataset.zip)"
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
     with urllib.request.urlopen(req) as response:
         zip_data = zipfile.ZipFile(io.BytesIO(response.read()))
         df = pd.read_csv(zip_data.open("hour.csv"))
 
-    # Sequence and lag generation
     df["dteday"] = pd.to_datetime(df["dteday"])
     df = df.sort_values(["dteday", "hr"]).reset_index(drop=True)
     df["cnt_lag_24h"] = df["cnt"].shift(24)
@@ -91,7 +91,7 @@ else:
 
     records = []
 
-    # Evaluation Design 1: Temporally Structured Evaluation (Earliest 80% train, latest 20% test)
+    # 1. Temporally Structured Evaluation (Earliest 80% train, latest 20% test)
     split_idx = int(len(df) * 0.8)
     X_train_temp, X_test_temp = X.iloc[:split_idx], X.iloc[split_idx:]
     y_train_temp, y_test_temp = y.iloc[:split_idx], y.iloc[split_idx:]
@@ -107,7 +107,7 @@ else:
             "mae": mean_absolute_error(y_test_temp, y_pred)
         })
 
-    # Evaluation Design 2: Random Evaluation (Unstratified 80/20 split)
+    # 2. Random Evaluation (Unstratified 80/20 split)
     X_train_rand, X_test_rand, y_train_rand, y_test_rand = train_test_split(
         X, y, test_size=0.2, random_state=42
     )
@@ -126,60 +126,36 @@ else:
     os.makedirs("analysis", exist_ok=True)
     results_df = pd.DataFrame(records)
     results_df.to_csv(results_path, index=False)
-# Empirical Results & Comparison
+  # Empirical Results & Comparison
 Below are the computed performance metrics derived from analysis/lab01_results.csv:
 
+#| label: display-table
+#| echo: false
+#| output: asis
 
-# FAIR Model Comparison Audit
- F — Frame: What Exactly Is Being Compared?
+display_df = results_df.copy()
+display_df["rmse"] = display_df["rmse"].round(2)
+display_df["mae"] = display_df["mae"].round(2)
 
+# Assign rankings within each evaluation split
+display_df["rank"] = display_df.groupby("evaluation_design")["rmse"].rank(ascending=True).astype(int)
 
-  The comparison contrasts an $L_2$-regularized parametric linear model (Ridge Regression) against a non-parametric ensemble (Random Forest Regression) predicting hourly bike rental counts ($cnt$). Two specific methodological conditions govern the data split:
+# Reorder columns for clean rendering
+display_df = display_df[["evaluation_design", "model", "rmse", "mae", "rank"]]
+display_df.columns = ["Evaluation Design", "Model", "RMSE", "MAE", "Rank"]
 
+# Construct native Markdown table for Pandoc/Word compatibility
+headers = list(display_df.columns)
+header_row = "| " + " | ".join(headers) + " |"
+divider_row = "| " + " | ".join(["---"] * len(headers)) + " |"
+rows = ["| " + " | ".join(str(val) for val in row) + " |" for _, row in display_df.iterrows()]
 
-1.	Random Evaluation: $80\%$ training and $20\%$ test sets drawn via uniform random sampling across the temporal horizon.
+print("\n".join([header_row, divider_row] + rows))
 
-
-2.	Temporally Structured Evaluation: Chronologically partitioned sets where the earliest $80\%$ of hourly records form the training set and the subsequent $20\%$ form the holdout test set.
-
-
-A — Align: Are the Model Conditions Comparable?
-
-
-All internal modeling factors remain strictly aligned across designs. Both algorithms receive the exact same engineered feature set, identical standard scaling on numerical inputs, identical one-hot encoding on categorical inputs, and are evaluated on identical metrics (RMSE and MAE). The only manipulated variable across experiments is the structural partitioning of the rows.
-
-
-I — Inspect: What Do RMSE and MAE Show?
-
-
-Under the Random Evaluation, error magnitudes are heavily deflated. Random Forest scores an RMSE and MAE substantially lower than its corresponding performance under the chronological split. Under the Temporally Structured Evaluation, errors escalate markedly for both candidate models. The error metric shifts reflect that predicting future points without adjacent temporal neighbors is fundamentally more challenging than reconstructing missing points within an existing sequence.
-
-
-R — Review: Does the Conclusion Change?
+FAIR Model Comparison AuditF — Frame: What Exactly Is Being Compared?The comparison contrasts an $L_2$-regularized linear model (Ridge Regression) [@hoerl1970ridge] against a non-parametric ensemble (Random Forest Regression) [@breiman2001random] predicting hourly bike rental counts ($cnt$). Two specific methodological conditions govern the split: an unstratified Random 80/20 split and a chronological Temporally Structured 80/20 split [@hyndman2018forecasting].A — Align: Are the Model Conditions Comparable?Feature space, preprocessing transformations, target leakage exclusions, and error metrics (RMSE, MAE) remain identical across both conditions. The sole variable manipulated is the sample partitioning protocol.I — Inspect: What Do RMSE and MAE Show?Under Random Evaluation, error metrics are substantially lower because the model interpolates between adjacent hours. Under Temporally Structured Evaluation, error values increase markedly across both candidate architectures as models are forced to extrapolate into the unobserved future.R — Review: Does the Conclusion Change?Model Ranking: Unchanged. Random Forest maintains Rank 1 across both regimes due to interaction-modeling capacity.Estimated Predictive Performance: Radically altered. Relying on random evaluation misrepresents real-world forecast accuracy and produces overly optimistic operational error expectations.Methodological Diagnosis & VerdictAutocorrelation Leakage: Random train/test splits violate independence assumptions on time-series datasets by placing points immediately preceding and following test instances into the training partition [@hyndman2018forecasting; @hastie2009elements].Ranking vs. Performance: Preserving model rank does not validate an evaluation design; capacity planning requires accurate error magnitudes, which random splits fail to deliver.Permissible vs. Non-Permissible ClaimsWhat the evidence permits claiming: Random partitioning severely underestimates out-of-sample prediction error on time-dependent datasets. Random Forest consistently outperforms linear regularized models across both split designs on this feature space.What the evidence does NOT permit claiming: The evidence does not permit claiming that Random Forest will maintain superiority under arbitrary forecast horizons, nor that an 80/20 chronological split is universally optimal for production validation.Replication VerdictReproduced.The empirical results confirm the central claim: changing the evaluation design from a random split to a temporally structured split significantly degrades estimated predictive performance (RMSE and MAE).ExtensionImplement a 5-fold walk-forward rolling-window time-series cross-validation [@hyndman2018forecasting; @bergmeir2012use] to assess stability across all seasonal transitions rather than relying on a single static holdout partition.ReferencesBergmeir, C., & Benítez, J. M. (2012). On the use of cross-validation for time series predictor evaluation. Information Sciences, 191, 192–213.Breiman, L. (2001). Random forests. Machine Learning, 45(1), 5–32.Fanaee-T, H., & Gama, J. (2014). Event labeling combining ensemble detectors and background knowledge. Progress in Artificial Intelligence, 2(2–3), 113–127.Hastie, T., Tibshirani, R., & Friedman, J. (2009). The Elements of Statistical Learning: Data Mining, Inference, and Prediction (2nd ed.). Springer.Hoerl, A. E., & Kennard, R. W. (1970). Ridge regression: Biased estimation for nonorthogonal problems. Technometrics, 12(1), 55–67.Hyndman, R. J., & Athanasopoulos, G. (2018). Forecasting: Principles and Practice (2nd ed.). OTexts.
 
 
-The analytical conclusion depends heavily on whether one examines model ranking or estimated predictive performance:
 
-
-•	Model Ranking: Invariant. Random Forest retains Rank 1 under both evaluation frameworks due to its non-linear modeling capacity.
-
-
-•	Estimated Performance: Drastically altered. Relying on the random evaluation yields an overly optimistic forecast of model accuracy, understating actual deployment forecast errors by a substantial margin.
-
-
-# Methodological Diagnosis
-
-Autocorrelation Leakage: Random train/test splits violate independence assumptions on time-series datasets by placing points immediately preceding and following test instances into the training set.
-
-Ranking vs. Performance: Preserving model rank does not validate an evaluation design; capacity planning requires accurate error magnitudes, which random splits fail to deliver.
-
-# Replication Verdict
-Reproduced.
-
-The empirical results confirm the central claim: changing the evaluation design from a random split to a temporally structured split significantly degrades estimated predictive performance (RMSE and MAE).
-
-# Extension
-Implement a 5-fold walk-forward rolling-window time-series cross-validation to assess stability across all seasonal transitions rather than relying on a single static holdout partition.
 
 
 
