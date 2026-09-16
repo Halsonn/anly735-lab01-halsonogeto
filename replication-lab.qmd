@@ -160,7 +160,7 @@ print("\n".join([header_row, divider_row] + rows))
 
 # FAIR Model Comparison Audit
 
-# — Frame: What Exactly Is Being Compared?
+F — Frame: What Exactly Is Being Compared?
 
 The comparison contrasts an $L_2$-regularized linear model (Ridge Regression) (Hoerl and Kennard, 1970)
  against a non-parametric ensemble (Random Forest Regression) (Breiman 2001) predicting 
