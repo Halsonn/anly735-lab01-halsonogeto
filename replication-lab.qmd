@@ -2,7 +2,7 @@
 title: "Replication Laboratory #1 | Evaluation Design Matters"
 subtitle: "ANLY 735: Predictive AI — Week 2"
 author: "Halson Ogeto Nyaberi"
-date: "September 14, 2026"
+date: today
 format:
   docx:
     toc: false
@@ -37,6 +37,7 @@ interactions among temporal flags, calendar variables, and weather dynamics with
 The prediction target is hourly bike rental demand (`cnt`) from the Capital Bikeshare system via the UCI Machine Learning Repository (Fanaee-T and Gama, 2014). 
 Potential sources of target leakage (`casual` and `registered` counts) and record indices (`instant`, `dteday`) are strictly excluded.
  Operational feature availability is preserved by incorporating 24-hour and 48-hour historical rental lags (`cnt_lag_24h`, `cnt_lag_48h`).
+
 
 ```{python}
 #| label: load-and-evaluate
