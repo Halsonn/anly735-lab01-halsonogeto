@@ -20,17 +20,23 @@ execute:
 Does changing the evaluation design change estimated predictive performance—and does it change which model appears stronger?
 
 ## Research Claim
-Evaluating predictive regression models using an unconstrained random split yields an artificially optimistic estimate of out-of-sample error and misrepresents operational generalization relative to a temporally structured evaluation on time-indexed demand data [@hyndman2018forecasting].
+Evaluating predictive regression models using an unconstrained random split yields an artificially optimistic estimate of out-of-sample 
+error and misrepresents operational generalization relative to a temporally structured evaluation on time-indexed demand data (Hyndman and Athanasopoulos 2014).
 
 ## Pre-Analysis Expectations
-1. **Estimated Predictive Performance:** Both Ridge Regression [@hoerl1970ridge] and Random Forest Regression [@breiman2001random] will produce markedly lower Root Mean Squared Error (RMSE) and Mean Absolute Error (MAE) under the Random Evaluation scheme than under the Temporally Structured Evaluation. Random splitting allows temporally adjacent observations to populate both training and test sets, enabling interpolation across contiguous serial correlations.
-2. **Model Ranking:** Random Forest Regression is anticipated to outperform Ridge Regression across both regimes due to its ability to model non-linear interactions among temporal flags, calendar variables, and weather dynamics without requiring manual basis expansions.
+1. **Estimated Predictive Performance:** Both Ridge Regression (Hoerl and Kennard, 1970) and Random Forest Regression (Breiman, 2001) will produce markedly lower
+ Root Mean Squared Error (RMSE) and Mean Absolute Error (MAE) under the Random Evaluation scheme than under the Temporally Structured Evaluation. Random splitting
+  allows temporally adjacent observations to populate both training and test sets, enabling interpolation across contiguous serial correlations.
+2. **Model Ranking:** Random Forest Regression is anticipated to outperform Ridge Regression across both regimes due to its ability to model non-linear 
+interactions among temporal flags, calendar variables, and weather dynamics without requiring manual basis expansions.
 
 ---
 
 # Reproducible Analytical Pipeline
 
-The prediction target is hourly bike rental demand (`cnt`) from the Capital Bikeshare system via the UCI Machine Learning Repository [@fanaee2014event]. Potential sources of target leakage (`casual` and `registered` counts) and record indices (`instant`, `dteday`) are strictly excluded. Operational feature availability is preserved by incorporating 24-hour and 48-hour historical rental lags (`cnt_lag_24h`, `cnt_lag_48h`).
+The prediction target is hourly bike rental demand (`cnt`) from the Capital Bikeshare system via the UCI Machine Learning Repository (Fanaee-T and Gama, 2014). 
+Potential sources of target leakage (`casual` and `registered` counts) and record indices (`instant`, `dteday`) are strictly excluded.
+ Operational feature availability is preserved by incorporating 24-hour and 48-hour historical rental lags (`cnt_lag_24h`, `cnt_lag_48h`).
 
 ```{python}
 #| label: load-and-evaluate
@@ -152,14 +158,14 @@ rows = ["| " + " | ".join(str(val) for val in row) + " |" for _, row in display_
 
 print("\n".join([header_row, divider_row] + rows))
 
-FAIR Model Comparison Audit
+# FAIR Model Comparison Audit
 
 F — Frame: What Exactly Is Being Compared?
 
-The comparison contrasts an $L_2$-regularized linear model (Ridge Regression) [@hoerl1970ridge]
- against a non-parametric ensemble (Random Forest Regression) [@breiman2001random] predicting 
+The comparison contrasts an $L_2$-regularized linear model (Ridge Regression) (Hoerl and Kennard, 1970)
+ against a non-parametric ensemble (Random Forest Regression) (Breiman 2001) predicting 
  hourly bike rental counts ($cnt$). Two specific methodological conditions govern the split: an 
- unstratified Random 80/20 split and a chronological Temporally Structured 80/20 split [@hyndman2018forecasting].
+ unstratified Random 80/20 split and a chronological Temporally Structured 80/20 split (Hyndman and Athanasopoulos, 2014).
  
  A — Align: Are the Model Conditions Comparable?
  
@@ -179,41 +185,44 @@ The comparison contrasts an $L_2$-regularized linear model (Ridge Regression) [@
  
  Estimated Predictive Performance: Radically altered. Relying on random evaluation misrepresents real-world forecast accuracy and produces overly optimistic operational error expectations.
  
- Methodological Diagnosis & Verdict
+ # Methodological Diagnosis & Verdict
  
  Autocorrelation Leakage: Random train/test splits violate independence assumptions on time-series datasets by placing points immediately preceding and following test instances into the training partition [@hyndman2018forecasting; @hastie2009elements].
  
  Ranking vs. Performance: Preserving model rank does not validate an evaluation design; capacity planning requires accurate error magnitudes, which random splits fail to deliver.
  
- Permissible vs. Non-Permissible Claims
+ # Permissible vs. Non-Permissible Claims
  
  What the evidence permits claiming: Random partitioning severely underestimates out-of-sample prediction error on time-dependent datasets. Random Forest consistently outperforms linear regularized models across both split designs on this feature space.
  
  What the evidence does NOT permit claiming: The evidence does not permit claiming that Random Forest will maintain superiority under arbitrary forecast horizons, nor that an 80/20 chronological split is universally optimal for production validation.
  
- Replication Verdict
+ # Replication Verdict
  
  Reproduced.
  
  The empirical results confirm the central claim: changing the evaluation design from a random split to a temporally structured split significantly degrades estimated predictive performance (RMSE and MAE).
  
- Extension 
+ # Extension 
  
- Implement a 5-fold walk-forward rolling-window time-series cross-validation [@hyndman2018forecasting; @bergmeir2012use] to assess stability across all seasonal transitions rather than relying on a single static holdout partition.
+ Implement a 5-fold walk-forward rolling-window time-series cross-validation (Hyndman and Athanasopoulos, 2014; Bergmeir and Benítez, 2012)
+
+
+ to assess stability across all seasonal transitions rather than relying on a single static holdout partition.
  
- References
+ # References
  
- Bergmeir, C., & Benítez, J. M. (2012). On the use of cross-validation for time series predictor evaluation. Information Sciences, 191, 192–213.
+ Bergmeir, C., & Benítez, J. M. (2012). On the use of cross-validation for time series predictor evaluation. Information Sciences, 191, 192-213.es, 191, 192-213.
  
- Breiman, L. (2001). Random forests. Machine Learning, 45(1), 5–32.
+ Breiman, L. (2001). Random forests. Machine learning, 45(1), 5-32.
  
- Fanaee-T, H., & Gama, J. (2014). Event labeling combining ensemble detectors and background knowledge. Progress in Artificial Intelligence, 2(2–3), 113–127.
+ Fanaee-T, H., & Gama, J. (2014). Event labeling combining ensemble detectors and background knowledge. Progress in Artificial Intelligence, 2(2), 113-127.
  
  Hastie, T., Tibshirani, R., & Friedman, J. (2009). The Elements of Statistical Learning: Data Mining, Inference, and Prediction (2nd ed.). Springer.
  
- Hoerl, A. E., & Kennard, R. W. (1970). Ridge regression: Biased estimation for nonorthogonal problems. Technometrics, 12(1), 55–67.
+ Hoerl, A. E., & Kennard, R. W. (1970). Ridge regression: Biased estimation for nonorthogonal problems. Technometrics, 12(1), 55-67.
  
- Hyndman, R. J., & Athanasopoulos, G. (2018). Forecasting: Principles and Practice (2nd ed.). OTexts.
+ Hyndman, R. J., & Athanasopoulos, G. (2014). Forecasting: principles and practice (Vol. 2). Melbourne, Australia: OTexts.
 
 
 
