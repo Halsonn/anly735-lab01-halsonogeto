@@ -160,7 +160,7 @@ print("\n".join([header_row, divider_row] + rows))
 
 # FAIR Model Comparison Audit
 
-F — Frame: What Exactly Is Being Compared?
+# — Frame: What Exactly Is Being Compared?
 
 The comparison contrasts an $L_2$-regularized linear model (Ridge Regression) (Hoerl and Kennard, 1970)
  against a non-parametric ensemble (Random Forest Regression) (Breiman 2001) predicting 
@@ -187,7 +187,8 @@ The comparison contrasts an $L_2$-regularized linear model (Ridge Regression) (H
  
  # Methodological Diagnosis & Verdict
  
- Autocorrelation Leakage: Random train/test splits violate independence assumptions on time-series datasets by placing points immediately preceding and following test instances into the training partition [@hyndman2018forecasting; @hastie2009elements].
+ Autocorrelation Leakage: Random train/test splits violate independence assumptions on time-series datasets by placing 
+ points immediately preceding and following test instances into the training partition (Hyndman and Athanasopoulos, 2014; Hastie et al, 2009).
  
  Ranking vs. Performance: Preserving model rank does not validate an evaluation design; capacity planning requires accurate error magnitudes, which random splits fail to deliver.
  
